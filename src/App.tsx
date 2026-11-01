@@ -17,6 +17,8 @@ import { MODES, parseVehicle, topicsFor, type Mode } from "./lib/hfp";
 import { createMap, renderVehicles, selectOnMap, type ColorBy } from "./lib/map";
 import { MqttClient, type ConnectionStatus } from "./lib/mqtt";
 import { positionAt, RateMeter, VehicleStore, type Stats, type Vehicle } from "./lib/vehicles";
+import { sound } from "./lib/sound";
+import { SoundEffects } from "./sound";
 
 const BROKER = "wss://mqtt.hsl.fi:443/";
 const COMPACT = window.matchMedia("(max-width: 767px)").matches;
@@ -77,6 +79,7 @@ export function App() {
     if (import.meta.env.DEV) (window as unknown as { map: MapLibreMap }).map = map;
 
     const select = (id: string | null) => {
+      if (id) sound.select();
       setSelectedId(id);
       setFollowing(id !== null);
     };
@@ -248,6 +251,7 @@ export function App() {
 
   return (
     <div className="relative h-dvh w-full">
+      <SoundEffects />
       {/* MapLibre's stylesheet sets position: relative on its container, so the sizing lives on a wrapper. */}
       <div className="absolute inset-0">
         <div ref={mapEl} className="h-full w-full" aria-label="Live map of HSL vehicles" />

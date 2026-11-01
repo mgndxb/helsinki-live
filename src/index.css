@@ -118,3 +118,12 @@ body {
     animation: none;
   }
 }
+
+@keyframes eq {
+  0% {
+    transform: scaleY(0.25);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}

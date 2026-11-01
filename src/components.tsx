@@ -5,6 +5,7 @@ import { MODES, type Mode } from "./lib/hfp";
 import { DELAY_COLORS, MODE_COLORS, type ColorBy } from "./lib/map";
 import type { ConnectionStatus } from "./lib/mqtt";
 import type { Stats, Vehicle } from "./lib/vehicles";
+import { SoundToggle } from "./sound";
 
 export const MODE_LABELS: Record<Mode, string> = {
   bus: "Bus",
@@ -60,6 +61,7 @@ export function Brand({ status, compact }: { status: ConnectionStatus; compact: 
 export function TopLinks({ onAbout }: { onAbout: () => void }) {
   return (
     <nav className="flex items-center gap-2">
+      <SoundToggle className="chip bg-void/60 backdrop-blur-md" bar="bg-bone" />
       <button type="button" onClick={onAbout} className="chip bg-void/60 backdrop-blur-md" aria-pressed="true">
         How it works
       </button>

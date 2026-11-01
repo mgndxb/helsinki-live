@@ -47,3 +47,5 @@ npm run verify   # typecheck + tests + production build
 Vehicle positions: [HSL high-frequency positioning](https://digitransit.fi/en/developers/apis/5-realtime-api/vehicle-positions/), Helsinki Region Transport, CC BY 4.0. Map data © OpenStreetMap contributors via [OpenFreeMap](https://openfreemap.org).
 
 Built by [Magnus Kaur](https://magnus.is-a.dev).
+
+**Sound:** the same generative ambient music as [magnus.is-a.dev](https://magnus.is-a.dev), synthesised with the Web Audio API (no audio files). The portfolio and its Lab projects share one origin, so the on/off choice follows you between them.
