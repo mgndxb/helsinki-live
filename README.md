@@ -4,6 +4,8 @@ Every HSL bus, tram, metro, train and ferry, moving live on a 3D map of Helsinki
 
 **Try it:** https://magnus.is-a.dev/helsinki-live/
 
+[![Helsinki Live: buses, trams and trains moving through a dark 3D map of central Helsinki](docs/preview.webp)](https://magnus.is-a.dev/helsinki-live/)
+
 Click a vehicle to follow it, switch modes on and off, colour the whole city by delay, or type a line number to find it.
 
 ## How it works
@@ -38,9 +40,11 @@ TypeScript, React 19, Vite, Tailwind CSS v4, MapLibre GL, Vitest. Map tiles from
 ```bash
 npm install
 npm run dev      # http://localhost:5173/helsinki-live/
-npm test         # parser, MQTT framing, interpolation, stats
+npm test         # 20 tests: parser, MQTT framing, interpolation, stats
 npm run verify   # typecheck + tests + production build
 ```
+
+Every push to `main` runs `npm run verify` in GitHub Actions, and the site only deploys if it passes.
 
 ## Credits
 
