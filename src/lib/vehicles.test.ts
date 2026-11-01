@@ -10,6 +10,7 @@ const TOPIC = "/hfp/v2/journey/ongoing/vp/metro/0050/00307/31M2/1/Mellunmäki/11
 function update(overrides: Partial<VehicleUpdate> = {}): VehicleUpdate {
   return {
     id: "22/1",
+    journey: null,
     mode: "tram",
     line: "4",
     headsign: "Munkkiniemi",
@@ -27,10 +28,11 @@ function update(overrides: Partial<VehicleUpdate> = {}): VehicleUpdate {
 describe("parseVehicle", () => {
   it("reads the real payload shape HSL sends", () => {
     const payload = encoder.encode(
-      '{"VP":{"desi":"M2","dir":"1","oper":50,"veh":307,"spd":15.41,"hdg":74,"lat":60.16971055,"long":24.93432554,"dl":-95,"occu":0}}',
+      '{"VP":{"desi":"M2","dir":"1","oper":50,"veh":307,"oday":"2026-11-01","spd":15.41,"hdg":74,"lat":60.16971055,"long":24.93432554,"dl":-95,"occu":0}}',
     );
     expect(parseVehicle(TOPIC, payload)).toEqual({
       id: "0050/00307",
+      journey: "metro|31M2|1|2026-11-01|11:36",
       mode: "metro",
       line: "M2",
       headsign: "Mellunmäki",
@@ -76,6 +78,44 @@ describe("punctuality", () => {
 });
 
 describe("VehicleStore", () => {
+  it("draws a coupled train once, however many units report", () => {
+    const store = new VehicleStore();
+    const trip = "metro|31M2|1|2026-11-01|11:36";
+    store.upsert(update({ id: "0050/00307", mode: "metro", journey: trip }), 0);
+    store.upsert(update({ id: "0050/00308", mode: "metro", journey: trip, lat: 60.1705 }), 100);
+    store.upsert(update({ id: "0050/00309", mode: "metro", journey: trip, lat: 60.171 }), 200);
+    expect([...store.vehicles.keys()]).toEqual(["0050/00307"]);
+    expect(store.stats().byMode.metro).toBe(1);
+  });
+
+  it("keeps different trips on the same line apart", () => {
+    const store = new VehicleStore();
+    store.upsert(update({ id: "a", journey: "tram|1004|1|2026-11-01|11:30" }), 0);
+    store.upsert(update({ id: "b", journey: "tram|1004|1|2026-11-01|11:40" }), 0);
+    store.upsert(update({ id: "c", journey: null }), 0);
+    store.upsert(update({ id: "d", journey: null }), 0);
+    expect(store.vehicles.size).toBe(4);
+  });
+
+  it("lets the next unit take over when the first stops reporting", () => {
+    const store = new VehicleStore();
+    const trip = "train|3001I|1|2026-11-01|12:05";
+    store.upsert(update({ id: "first", mode: "train", journey: trip }), 0);
+    store.upsert(update({ id: "second", mode: "train", journey: trip }), 0);
+    store.upsert(update({ id: "second", mode: "train", journey: trip }), 40_000);
+    store.prune(50_000);
+    store.upsert(update({ id: "second", mode: "train", journey: trip }), 50_100);
+    expect([...store.vehicles.keys()]).toEqual(["second"]);
+  });
+
+  it("frees the trip when a bus starts its next one", () => {
+    const store = new VehicleStore();
+    store.upsert(update({ id: "bus", mode: "bus", journey: "bus|1055|1|2026-11-01|10:00" }), 0);
+    store.upsert(update({ id: "bus", mode: "bus", journey: "bus|1055|2|2026-11-01|11:00" }), 1_000);
+    store.upsert(update({ id: "other", mode: "bus", journey: "bus|1055|1|2026-11-01|10:00" }), 2_000);
+    expect([...store.vehicles.keys()].sort()).toEqual(["bus", "other"]);
+  });
+
   it("glides from the current on-screen position to each new fix", () => {
     const store = new VehicleStore();
     store.upsert(update({ lon: 24.94 }), 0);

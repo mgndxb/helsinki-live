@@ -44,10 +44,22 @@ export interface Stats {
 
 export class VehicleStore {
   readonly vehicles = new Map<string, Vehicle>();
+  /** Which unit speaks for each trip, so a coupled train is drawn once, not once per unit. */
+  private readonly journeys = new Map<string, string>();
 
   upsert(update: VehicleUpdate, now: number) {
     const target: [number, number] = [update.lon, update.lat];
     const existing = this.vehicles.get(update.id);
+    if (existing && existing.journey !== update.journey) this.release(update.id, existing.journey);
+    if (update.journey) {
+      const owner = this.journeys.get(update.journey);
+      if (owner && owner !== update.id && this.vehicles.has(owner)) {
+        // Another unit of the same train already represents this trip.
+        if (existing) this.remove(update.id);
+        return;
+      }
+      this.journeys.set(update.journey, update.id);
+    }
     if (!existing) {
       this.vehicles.set(update.id, { ...update, from: target, to: target, movedAt: now, seenAt: now });
       return;
@@ -59,15 +71,25 @@ export class VehicleStore {
 
   prune(now: number) {
     for (const [id, vehicle] of this.vehicles) {
-      if (now - vehicle.seenAt > STALE_MS) this.vehicles.delete(id);
+      if (now - vehicle.seenAt > STALE_MS) this.remove(id);
     }
   }
 
   /** Drops vehicles of modes the visitor switched off, so they vanish at once. */
   keepModes(modes: Set<Mode>) {
     for (const [id, vehicle] of this.vehicles) {
-      if (!modes.has(vehicle.mode)) this.vehicles.delete(id);
+      if (!modes.has(vehicle.mode)) this.remove(id);
     }
+  }
+
+  private remove(id: string) {
+    this.release(id, this.vehicles.get(id)?.journey ?? null);
+    this.vehicles.delete(id);
+  }
+
+  /** Frees a trip when its unit leaves or starts another one, so a coupled unit can take over. */
+  private release(id: string, journey: string | null) {
+    if (journey && this.journeys.get(journey) === id) this.journeys.delete(journey);
   }
 
   stats(): Stats {

@@ -10,6 +10,11 @@ export type Mode = (typeof MODES)[number];
 
 export interface VehicleUpdate {
   id: string;
+  /**
+   * The trip this vehicle is running: route, direction, operating day and departure time.
+   * Coupled metro and train units each report their own position but share this.
+   */
+  journey: string | null;
   mode: Mode;
   line: string;
   headsign: string;
@@ -49,6 +54,7 @@ interface RawVP {
   long?: number | null;
   dl?: number | null;
   occu?: number | null;
+  oday?: string | null;
 }
 
 export function parseVehicle(topic: string, payload: Uint8Array): VehicleUpdate | null {
@@ -65,8 +71,10 @@ export function parseVehicle(topic: string, payload: Uint8Array): VehicleUpdate 
   if (!vp || typeof vp.lat !== "number" || typeof vp.long !== "number") return null;
 
   const nextStop = parts[13];
+  const [route, direction, start] = [parts[9], parts[10], parts[12]];
   return {
     id: `${parts[7]}/${parts[8]}`,
+    journey: route && direction && start ? `${mode}|${route}|${direction}|${vp.oday ?? ""}|${start}` : null,
     mode,
     line: vp.desi ?? parts[9] ?? "?",
     headsign: parts[11] ?? "",
