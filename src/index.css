@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #060607;
+  --color-surface: #0f0f12;
+  --color-bone: #efede8;
+  --color-ash: #9d9b95;
+  --color-dim: #64635f;
+  --color-line: rgb(239 237 232 / 0.1);
+  --color-mint: #46e39b;
+  --color-amber: #ffbe55;
+  --color-red: #ff5a4a;
+
+  --font-display: "Unbounded", system-ui, sans-serif;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--color-void);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .panel {
+    background: rgb(10 10 13 / 0.72);
+    border: 1px solid var(--color-line);
+    border-radius: 22px;
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.25rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    font-size: 13px;
+    white-space: nowrap;
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      opacity 200ms ease,
+      transform 160ms var(--ease-out-expo);
+  }
+  .chip:active {
+    transform: scale(0.96);
+  }
+  .chip[aria-pressed="true"] {
+    background: rgb(239 237 232 / 0.08);
+    border-color: rgb(239 237 232 / 0.22);
+  }
+  .chip[aria-pressed="false"] {
+    opacity: 0.45;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  .live-dot[data-live="true"] {
+    animation: pulse 1.8s ease-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(70 227 155 / 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgb(70 227 155 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(70 227 155 / 0);
+  }
+}
+
+/* MapLibre's attribution, restyled for the dark map. */
+.maplibregl-ctrl-attrib {
+  background: rgb(10 10 13 / 0.7) !important;
+  color: var(--color-ash) !important;
+  font-size: 11px;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--color-ash) !important;
+}
+.maplibregl-ctrl-attrib-button {
+  filter: invert(1);
+}
+/* On phones the bottom sheet owns the bottom edge, so the credits move up. */
+@media (max-width: 767px) {
+  .maplibregl-ctrl-bottom-right {
+    top: 64px;
+    bottom: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot[data-live="true"] {
+    animation: none;
+  }
+}
