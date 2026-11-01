@@ -48,6 +48,8 @@ export function createMap(container: HTMLElement, compact: boolean): MapLibreMap
   map.addControl(new AttributionControl({ compact: true }), "bottom-right");
 
   map.on("load", () => {
+    // MapLibre opens compact credits at first; on a phone that line would cover the header, so start folded.
+    if (compact) map.getContainer().querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
     // Swap the flat footprints for extruded buildings, lit just enough to read the city.
     if (map.getLayer("building")) map.setLayoutProperty("building", "visibility", "none");
     const firstLabel = map.getStyle().layers.find((layer) => layer.type === "symbol")?.id;

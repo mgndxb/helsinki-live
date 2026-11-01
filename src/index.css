@@ -105,10 +105,10 @@ body {
 .maplibregl-ctrl-attrib-button {
   filter: invert(1);
 }
-/* On phones the bottom sheet owns the bottom edge, so the credits move up. */
+/* On phones the bottom sheet owns the bottom edge, so the credits move up, below the title. */
 @media (max-width: 767px) {
   .maplibregl-ctrl-bottom-right {
-    top: 64px;
+    top: 104px;
     bottom: auto;
   }
 }
